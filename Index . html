@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ur" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rock Paper Scissors</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(160deg, #0f0c29, #302b63, #24243e);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', sans-serif;
+      color: #fff;
+      padding: 24px;
+    }
+
+    h1 { font-size: 2rem; font-weight: 900; text-align: center; }
+    .subtitle { color: #a78bfa; font-size: 0.9rem; margin-top: 6px; text-align: center; }
+
+    /* Score */
+    .score-board {
+      display: flex;
+      gap: 12px;
+      margin: 24px 0;
+    }
+    .score-box {
+      background: rgba(255,255,255,0.07);
+      border-radius: 14px;
+      padding: 12px 24px;
+      text-align: center;
+      min-width: 75px;
+    }
+    .score-num { font-size: 1.8rem; font-weight: 800; }
+    .score-label { font-size: 0.75rem; color: #94a3b8; margin-top: 2px; }
+
+    /* Arena */
+    .arena {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      width: 100%;
+      max-width: 360px;
+      margin-bottom: 24px;
+    }
+    .player { flex: 1; text-align: center; }
+    .player-label { font-size: 0.7rem; letter-spacing: 2px; margin-bottom: 8px; }
+    .player-box {
+      font-size: 3rem;
+      background: rgba(255,255,255,0.06);
+      border-radius: 20px;
+      padding: 18px;
+      min-height: 85px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid rgba(167,139,250,0.2);
+      transition: all 0.3s;
+    }
+    .player-box.user-active { border-color: #a78bfa; }
+    .player-box.comp-active { border-color: #f87171; }
+    .player-name { font-size: 0.78rem; margin-top: 6px; color: #c4b5fd; min-height: 18px; }
+    .comp-name { color: #fca5a5; }
+    .vs { font-size: 1.4rem; font-weight: 800; color: #475569; }
+
+    /* Result */
+    .result-box {
+      border-radius: 16px;
+      padding: 14px 36px;
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 1.4rem;
+      font-weight: 800;
+      display: none;
+      animation: pop 0.3s ease;
+    }
+
+    /* Buttons */
+    .hint { color: #64748b; font-size: 0.85rem; margin-bottom: 14px; text-align: center; }
+    .choices { display: flex; gap: 12px; justify-content: center; }
+    .choice-btn {
+      background: rgba(255,255,255,0.07);
+      border: 2px solid rgba(167,139,250,0.35);
+      border-radius: 18px;
+      padding: 16px 18px;
+      cursor: pointer;
+      color: #fff;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .choice-btn:hover { background: rgba(167,139,250,0.18); }
+    .choice-btn .emoji { font-size: 2.4rem; }
+    .choice-btn .clabel { font-size: 0.75rem; color: #c4b5fd; margin-top: 6px; }
+
+    .play-again-btn {
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      border: none;
+      border-radius: 14px;
+      padding: 14px 44px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: none;
+      box-shadow: 0 4px 20px rgba(124,58,237,0.4);
+    }
+
+    @keyframes pop {
+      from { opacity: 0; transform: scale(0.85); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>✊ Rock Paper Scissors</h1>
+  <p class="subtitle">Computer se lado!</p>
+
+  <!-- Score Board -->
+  <div class="score-board">
+    <div class="score-box" style="border: 1.5px solid #22c55e55;">
+      <div class="score-num" style="color:#22c55e;" id="win-score">0</div>
+      <div class="score-label">جیت</div>
+    </div>
+    <div class="score-box" style="border: 1.5px solid #f59e0b55;">
+      <div class="score-num" style="color:#f59e0b;" id="draw-score">0</div>
+      <div class="score-label">ڈرا</div>
+    </div>
+    <div class="score-box" style="border: 1.5px solid #ef444455;">
+      <div class="score-num" style="color:#ef4444;" id="lose-score">0</div>
+      <div class="score-label">ہار</div>
+    </div>
+  </div>
+
+  <!-- Arena -->
+  <div class="arena">
+    <div class="player">
+      <div class="player-label" style="color:#a78bfa;">تم</div>
+      <div class="player-box" id="user-box">❓</div>
+      <div class="player-name" id="user-name"></div>
+    </div>
+    <div class="vs">VS</div>
+    <div class="player">
+      <div class="player-label" style="color:#f87171;">کمپیوٹر</div>
+      <div class="player-box" id="comp-box">🤖</div>
+      <div class="player-name comp-name" id="comp-name"></div>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div class="result-box" id="result-box"></div>
+
+  <!-- Choice Buttons -->
+  <div id="choices-section">
+    <p class="hint">👇 Apni choice select karo</p>
+    <div class="choices">
+      <button class="choice-btn" onclick="play('rock')">
+        <div class="emoji">🪨</div>
+        <div class="clabel">Rock</div>
+      </button>
+      <button class="choice-btn" onclick="play('paper')">
+        <div class="emoji">📄</div>
+        <div class="clabel">Paper</div>
+      </button>
+      <button class="choice-btn" onclick="play('scissors')">
+        <div class="emoji">✂️</div>
+        <div class="clabel">Scissors</div>
+      </button>
+    </div>
+  </div>
+
+  <!-- Play Again -->
+  <button class="play-again-btn" id="again-btn" onclick="reset()">🔄 Dobara Khelo</button>
+
+  <script>
+    const choices = [
+      { id: "rock",     emoji: "🪨", label: "Rock" },
+      { id: "paper",    emoji: "📄", label: "Paper" },
+      { id: "scissors", emoji: "✂️", label: "Scissors" },
+    ];
+
+    let score = { win: 0, lose: 0, draw: 0 };
+    let thinking = false;
+
+    function getResult(user, comp) {
+      if (user === comp) return "draw";
+      if (
+        (user === "rock"     && comp === "scissors") ||
+        (user === "scissors" && comp === "paper")    ||
+        (user === "paper"    && comp === "rock")
+      ) return "win";
+      return "lose";
+    }
+
+    function play(userChoice) {
+      if (thinking) return;
+      thinking = true;
+
+      const userObj = choices.find(c => c.id === userChoice);
+      document.getElementById("user-box").textContent = userObj.emoji;
+      document.getElementById("user-box").className = "player-box user-active";
+      document.getElementById("user-name").textContent = userObj.label;
+      document.getElementById("comp-box").textContent = "🤖";
+      document.getElementById("comp-name").textContent = "";
+      document.getElementById("result-box").style.display = "none";
+
+      // Animate computer thinking
+      let i = 0;
+      const emojis = ["🪨", "📄", "✂️"];
+      const interval = setInterval(() => {
+        document.getElementById("comp-box").textContent = emojis[i % 3];
+        i++;
+        if (i > 9) {
+          clearInterval(interval);
+          const comp = choices[Math.floor(Math.random() * 3)];
+          document.getElementById("comp-box").textContent = comp.emoji;
+          document.getElementById("comp-box").className = "player-box comp-active";
+          document.getElementById("comp-name").textContent = comp.label;
+
+          const result = getResult(userChoice, comp.id);
+          score[result]++;
+
+          document.getElementById("win-score").textContent  = score.win;
+          document.getElementById("draw-score").textContent = score.draw;
+          document.getElementById("lose-score").textContent = score.lose;
+
+          const rb = document.getElementById("result-box");
+          if (result === "win") {
+            rb.textContent = "🎉 Tum Jeet Gaye!";
+            rb.style.background = "#052e16";
+            rb.style.border = "2px solid #22c55e";
+            rb.style.color = "#22c55e";
+          } else if (result === "lose") {
+            rb.textContent = "😞 Computer Jeeta!";
+            rb.style.background = "#2d0a0a";
+            rb.style.border = "2px solid #ef4444";
+            rb.style.color = "#ef4444";
+          } else {
+            rb.textContent = "🤝 Draw! Barabar!";
+            rb.style.background = "#1c1700";
+            rb.style.border = "2px solid #f59e0b";
+            rb.style.color = "#f59e0b";
+          }
+          rb.style.display = "block";
+
+          document.getElementById("choices-section").style.display = "none";
+          document.getElementById("again-btn").style.display = "block";
+          thinking = false;
+        }
+      }, 100);
+    }
+
+    function reset() {
+      document.getElementById("user-box").textContent = "❓";
+      document.getElementById("user-box").className = "player-box";
+      document.getElementById("user-name").textContent = "";
+      document.getElementById("comp-box").textContent = "🤖";
+      document.getElementById("comp-box").className = "player-box";
+      document.getElementById("comp-name").textContent = "";
+      document.getElementById("result-box").style.display = "none";
+      document.getElementById("choices-section").style.display = "block";
+      document.getElementById("again-btn").style.display = "none";
+    }
+  </script>
+</body>
+</html>
+  
